@@ -14,21 +14,23 @@ class params {
 class body {
     constructor() {
         if (new.target === body) {
-            throw new TypeError('Cannot construct Abstract instances directly');
+            checkBodyType(new.target.type);
         }
     }
 }
 
-class Identifier extends body{
-    constructor(type, name){
+
+
+class Identifier extends body {
+    constructor(type, name) {
         super();
         this.type = type;
         this.name = name;
     }
 }
 
-class Literal extends body{
-    constructor(value, raw){
+class Literal extends body {
+    constructor(value, raw) {
         super();
         this.value = value;
         this.raw = raw;
@@ -38,8 +40,22 @@ class Literal extends body{
 class Expression {
     constructor() {
         if (new.target === Expression) {
-            throw new TypeError('Cannot construct Abstract instances directly');
+            checkExpressionType(new.target.type);
+            //    throw new TypeError('Cannot construct Abstract instances directly');
         }
+    }
+}
+
+function checkExpressionType(type) {
+    switch (type) {
+    case 'UnaryExpression':
+        break;
+    case 'BinaryExpression':
+        break;
+    case 'UpdateExpression':
+        break;
+    case 'AssignmentExpression':
+        break;
     }
 }
 
@@ -100,20 +116,20 @@ class AssignmentExpression extends Expression {
     }
 }
 
-class Argument extends body{
-    constructor(argument){
+class Argument extends body {
+    constructor(argument) {
         super(argument);
     }
 }
 
-class Test extends body{
-    constructor(test){
+class Test extends body {
+    constructor(test) {
         super(test);
     }
 }
 
-class ReturnStatement{
-    constructor(argument){
+class ReturnStatement {
+    constructor(argument) {
         this.argument = new Argument(argument);
 
     }
