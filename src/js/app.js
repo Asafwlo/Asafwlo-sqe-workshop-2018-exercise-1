@@ -1,106 +1,26 @@
 import $ from 'jquery';
-import { parseCode } from './code-analyzer';
-import { FunctionDeclaration, Loop, If, AssignmentExpression, VariableDeclarator, ReturnStatement } from './model';
-import { isNumber } from 'util';
+import { parseCode, objectTable } from './code-analyzer';
 
 var data;
-var table = { 'Rows': [] };
+var table;
 
 $(document).ready(function () {
     $('#codeSubmissionButton').click(() => {
         let codeToParse = $('#codePlaceholder').val();
-        let parsedCode = parseCode(codeToParse);
-        $('#parsedCode').val(JSON.stringify(parsedCode, null, 2));
-        data = parsedCode;
-        table = { 'Rows': [] };
-        createObjectTable(data);
-        drawTable(table.Rows);
+        try {
+            let parsedCode = parseCode(codeToParse);
+            $('#parsedCode').val(JSON.stringify(parsedCode, null, 2));
+            data = parsedCode;
+            table = objectTable(data);
+            drawTable(table.Rows);
+        }
+        catch (error){
+            throw new 'Invalid input.';
+        }
     });
 });
 
-function isElseIf(obj) {
-    if (obj.type === 'IfStatement')
-        obj.type = 'Else If Statement';
 
-}
-function bodyType(obj) {
-    if ('body' in obj && 'body' in obj.body)
-        return 'body';
-    else if ('alternate' in obj) {
-        isElseIf(obj.alternate);
-        return 'ifElse';
-    }
-    else if ('consequent' in obj)
-        return 'if';
-    return '';
-}
-
-function handleBody(obj) {
-    switch (bodyType(obj)) {
-        case 'body':
-            createObjectTable(obj.body);
-            break;
-        case 'ifElse':
-            createObjectTable([obj.consequent]);
-            createObjectTable([obj.alternate]);
-            break;
-        case 'if':
-            createObjectTable([obj.consequent]);
-            break;
-        default:
-            break;
-    }
-}
-
-function createObjectTable(obj) {
-    if ('length' in obj) {
-        for (var index = 0; index < obj.length; index++) {
-            var newObj = ExtractElements(obj[index]);
-            if (!isNumber(newObj)) {
-                table.Rows.push({ 'obj': newObj });
-                handleBody(obj[index]);
-            }
-        }
-    }
-    else {
-        createObjectTable(obj.body);
-    }
-}
-
-function ExtractElements(obj) {
-    switch (obj.type) {
-        case 'VariableDeclaration':
-            for (var index = 0; index < obj.declarations.length; index++) {
-                table.Rows.push({ 'obj': new VariableDeclarator(obj.declarations[index]) });
-            }
-            break;
-        case 'ExpressionStatement':
-            return ExtractElement(obj.expression);
-        case 'ReturnStatement':
-            return new ReturnStatement(obj);
-        default:
-            return ExtractElement(obj);
-    }
-    return 0;
-}
-
-function ExtractElement(obj) {
-    var loopDic = ['WhileStatement', 'DoWhileStatement', 'ForStatement', 'ForOfStatement', 'ForInStatement'];
-    var ifDic = ['IfStatement', 'Else If Statement'];
-    switch (obj.type) {
-        case 'FunctionDeclaration':
-            return new FunctionDeclaration(obj);
-        case 'AssignmentExpression':
-            return new AssignmentExpression(obj);
-        default:
-            if (ifDic.indexOf(obj.type) >= 0)
-                return new If(obj);
-            if (loopDic.indexOf(obj.type) >= 0)
-                return new Loop(obj);
-            else
-                return 0;
-    }
-}
 
 function addParam(param, line) {
     var row = createRow();
@@ -143,14 +63,22 @@ function addObjRow(rowObj, line) {
         row.cells[4].innerHTML = rowObj.value;
     table.appendChild(row);
 }
-function clearTable() {
+export function clearTable() {
     var table = document.getElementById('parsedTableBody');
     var length = table.rows.length;
     for (var index = 0; index < length; index++) {
-        table.rows.splice(0,1);
+        var child = table.rows[0];
+        table.removeChild(child);
     }
 }
-function drawTable(dataTable) {
+
+function dropLine(obj){
+    if (obj.type === 'Variable Declarator' || obj.hasOwnProperty('belong'))
+        return true;
+    return false;
+
+}
+export function drawTable(dataTable) {
     clearTable();
     var line = 1;
     for (var index = 0; index < dataTable.length; index++) {
@@ -158,7 +86,7 @@ function drawTable(dataTable) {
             addFuncDecRow(dataTable[index].obj, line);
         else {
             addObjRow(dataTable[index].obj, line);
-            if (index + 1 < dataTable.length && dataTable[index + 1].obj.type === 'Variable Declarator')
+            if (index + 1 < dataTable.length && dropLine(dataTable[index + 1].obj))
                 line--;
         }
         line++;
