@@ -1,6 +1,6 @@
 export class FunctionDeclaration{
     constructor(obj){
-        this.type = obj.type;
+        this.type = 'Function Declaration';
         if (obj.id === null)
             this.name = 'null';
         else
@@ -33,14 +33,14 @@ class Param{
 
 export class VariableDeclarator{
     constructor(obj){
-        this.type = obj.type;
+        this.type = 'Variable Declarator';
         this.name = obj.id.name;
     }
 }
 
 export class AssignmentExpression{
     constructor(obj){
-        this.type = obj.type;
+        this.type = 'Assignment Expression';
         if (obj.left === null)
             throw('Assignment Expression: Left side is null');
         else
@@ -116,7 +116,10 @@ export class Loop{
 
 export class If{
     constructor(obj){
-        this.type = obj.type;
+        if (obj.type === 'IfStatement')
+            this.type = 'If Statement';
+        else
+            this.type = obj.type;
         if ('left' in obj.test)
         {
             if (obj.test.right.type === 'MemberExpression')
@@ -172,7 +175,7 @@ function ExtractArgument(obj){
 }
 export class ReturnStatement{
     constructor(obj){
-        this.type = obj.type;
+        this.type = 'Return Statement';
         if (obj.argument === null)
             this.value = 'null';
         else if (obj.argument.type === 'Literal')

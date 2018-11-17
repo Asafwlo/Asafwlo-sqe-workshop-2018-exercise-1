@@ -1,0 +1,42 @@
+#parsedTable{
+    width: 100%;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.5em;
+    border-collapse:separate;
+    border-color: black;
+}
+
+#parsedTable th, td {
+    text-align: left;
+    padding: 8px;
+}
+
+#parsedTable tr:nth-child(even) {background-color: #e1f0ff;}
+
+.row{
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+}
+
+.col-2{
+    grid-column: span 2;
+}
+
+.col-8{
+    grid-column: span 8;
+}
+
+.IOTable{
+    width: 100%;
+    height: 100%;
+}
+
+.textAreaWrapper {
+    width: 100%;
+    height: 80vh;
+}
+
+textarea {
+    width: 80%;
+    height: 95%;
+}
