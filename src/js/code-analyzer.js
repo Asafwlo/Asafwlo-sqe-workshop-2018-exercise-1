@@ -32,8 +32,6 @@ function bodyType(obj) {
     else if (obj.hasOwnProperty('alternate')) {
         return isElseIf(obj.alternate); 
     }
-    else if (obj.hasOwnProperty('consequent'))
-        return 'if';
     return '';
 }
 
@@ -55,7 +53,7 @@ function handleBody(obj) {
         createObjectTable(IfBody(obj.alternate));
         break;
     case 'else':
-        createObjectTable(obj.alternate);
+        createObjectTable(IfBody(obj.alternate));
         break;
     case 'if':
         createObjectTable(IfBody(obj.consequent));
@@ -66,27 +64,34 @@ function handleBody(obj) {
 }
 
 function Contains(obj){
-    var list = ['WhileStatement', 'ForStatement', 'ForInStatement', 'ForOfStatement', 'IfStatement'];
+    var list = ['WhileStatement', 'ForStatement', 'ForInStatement', 'ForOfStatement', 'If Statement', 'Else If Statement'];
     if (list.indexOf(obj.type)>=0)
         return true;
     return false;
 }
 
-function addToTable(newObj){
+function isBelong(index)
+{
+    if (table.Rows.length > 0 && table.Rows[table.Rows.length-1].hasOwnProperty('belong') && index == 0)
+        stopLine = true;
+}
+
+function addToTable(newObj, obj){
     if (stopLine)
         table.Rows.push({ 'obj': newObj, 'belong': true });
     else
         table.Rows.push({ 'obj': newObj });
+    if (Contains(obj))
+        stopLine = true;
 }
 
 export function createObjectTable(obj) {
     if (obj.hasOwnProperty('length')) {
-        if (Contains(obj))
-            stopLine = true;
         for (var index = 0; index < obj.length; index++) {
+            isBelong(index);
             var newObj = ExtractElements(obj[index]);
             if (!isNumber(newObj)) {
-                addToTable(newObj);
+                addToTable(newObj, obj[index], index);
                 handleBody(obj[index]);
             }
         }

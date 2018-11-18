@@ -3,7 +3,8 @@ import { parseCode, objectTable } from './code-analyzer';
 
 var data;
 var table;
-
+var line = 1;
+var firstInLine = true;
 $(document).ready(function () {
     $('#codeSubmissionButton').click(() => {
         let codeToParse = $('#codePlaceholder').val();
@@ -28,7 +29,10 @@ function addParam(param, line) {
     row.cells[1].innerHTML = 'Variable Declaration';
     row.cells[2].innerHTML = param.name;
     row.cells[3].innerHTML = '';
-    row.cells[4].innerHTML = '';
+    if (param.hasOwnProperty('value'))
+        row.cells[4].innerHTML = param.value;    
+    else
+        row.cells[4].innerHTML = '';
     return row;
 }
 
@@ -49,21 +53,22 @@ function addFuncDecRow(rowObj, line) {
 function addObjRow(rowObj, line) {
     var table = document.getElementById('parsedTableBody');
     var row = createRow();
-    row.cells[2].innerHTML = '';
-    row.cells[3].innerHTML = '';
-    row.cells[4].innerHTML = '';
+    row.cells[2].textContent = '';
+    row.cells[3].textContent = '';
+    row.cells[4].textContent = '';
 
-    row.cells[0].innerHTML = line;
-    row.cells[1].innerHTML = rowObj.type;
-    if ('name' in rowObj)
-        row.cells[2].innerHTML = rowObj.name;
-    if ('condition' in rowObj)
-        row.cells[3].innerHTML = rowObj.condition;
-    if ('value' in rowObj)
-        row.cells[4].innerHTML = rowObj.value;
+    row.cells[0].textContent = line;
+    row.cells[1].textContent = rowObj.type;
+    if (rowObj.hasOwnProperty('name'))
+        row.cells[2].textContent = rowObj.name;
+    if (rowObj.hasOwnProperty('condition'))
+        row.cells[3].textContent = rowObj.condition;
+    if (rowObj.hasOwnProperty('value'))
+        row.cells[4].textContent = rowObj.value;
     table.appendChild(row);
 }
 export function clearTable() {
+    line = 1;
     var table = document.getElementById('parsedTableBody');
     var length = table.rows.length;
     for (var index = 0; index < length; index++) {
@@ -73,20 +78,26 @@ export function clearTable() {
 }
 
 function dropLine(obj){
-    if (obj.type === 'Variable Declarator' || obj.hasOwnProperty('belong'))
+    
+    if (obj.obj.type === 'Variable Declaration')
         return true;
+    else if (obj.hasOwnProperty('belong') && !firstInLine)
+        return true;
+    else if (obj.hasOwnProperty('belong'))
+        firstInLine = false;
+    else
+        firstInLine = true;
     return false;
-
 }
 export function drawTable(dataTable) {
     clearTable();
-    var line = 1;
+    
     for (var index = 0; index < dataTable.length; index++) {
         if (dataTable[index].obj.type === 'Function Declaration')
             addFuncDecRow(dataTable[index].obj, line);
         else {
             addObjRow(dataTable[index].obj, line);
-            if (index + 1 < dataTable.length && dropLine(dataTable[index + 1].obj))
+            if (index + 1 < dataTable.length && dropLine(dataTable[index + 1]))
                 line--;
         }
         line++;
