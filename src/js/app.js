@@ -5,7 +5,9 @@ var data;
 var table;
 var line = 1;
 var firstInLine = true;
+
 $(document).ready(function () {
+    document.getElementById('parsedTable').hidden = true;
     $('#codeSubmissionButton').click(() => {
         let codeToParse = $('#codePlaceholder').val();
         try {
@@ -90,6 +92,7 @@ function dropLine(obj){
     return false;
 }
 export function drawTable(dataTable) {
+    document.getElementById('parsedTable').hidden = false;
     clearTable();
     
     for (var index = 0; index < dataTable.length; index++) {
